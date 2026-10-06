@@ -5,5 +5,9 @@ import androidx.compose.runtime.Composable
 
 @Composable
 fun ClaramenteTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = ClaramenteColors.DarkScheme, typography = ClaramenteTypography.typography, content = content)
+    MaterialTheme(
+        colorScheme = ClaramenteColors.LightScheme,
+        typography = ClaramenteTypography.typography,
+        content = content,
+    )
 }

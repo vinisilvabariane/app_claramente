@@ -1,11 +1,10 @@
 package com.claramente.navigation
 
 object Routes {
+    const val LOGIN = "login"
+    const val HOME = "home"
     const val HUB = "hub"
-    const val CATALOG = "catalog"
-    const val LESSON_ID_ARG = "lessonId"
-    const val LESSON = "lesson/{$LESSON_ID_ARG}"
-    const val AR_TEST_LESSON_ID = "cube"
-
-    fun lesson(id: String): String = "lesson/$id"
+    const val PROFILE = "perfil"
+    const val AR = "ar"
+    const val AR_EXPERIENCE = "ar-experiencia"
 }

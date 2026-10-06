@@ -13,7 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
-
-build/
+/claramente.properties
 /.kotlin
-/releases/*.apk
+build/
+/release/*.apk

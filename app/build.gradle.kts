@@ -1,6 +1,24 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.compose.screenshot)
+}
+
+val appSettings = Properties().apply {
+    val file = rootProject.file("claramente.properties")
+    if (file.isFile) file.inputStream().use { load(it) }
+}
+
+fun setting(name: String, default: String): String =
+    (project.findProperty(name) as String?) ?: appSettings.getProperty(name) ?: System.getenv(name) ?: default
+
+val signingProperties = Properties().apply {
+    val path = System.getenv("CLARAMENTE_SIGNING_PROPERTIES")
+        ?: "${System.getProperty("user.home")}/.claramente-signing/keystore.properties"
+    val file = File(path)
+    if (file.isFile) file.inputStream().use { load(it) }
 }
 
 android {
@@ -13,14 +31,39 @@ android {
         applicationId = "com.claramente"
         minSdk = 24
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 4
+        versionName = "1.1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val mockAuth = setting("CLARAMENTE_MOCK_AUTH", "true").trim().let { it.equals("true", ignoreCase = true) || it == "1" }
+        buildConfigField("String", "API_BASE_URL", "\"${setting("CLARAMENTE_API_URL", "http://10.0.2.2:5090")}\"")
+        buildConfigField("String", "AR_WEB_URL", "\"${setting("CLARAMENTE_AR_WEB_URL", "")}\"")
+        buildConfigField("boolean", "MOCK_AUTH", mockAuth.toString())
+    }
+
+    signingConfigs {
+        if (signingProperties.getProperty("storeFile") != null) {
+            create("release") {
+                storeFile = file(signingProperties.getProperty("storeFile"))
+                storePassword = signingProperties.getProperty("storePassword")
+                keyAlias = signingProperties.getProperty("keyAlias")
+                keyPassword = signingProperties.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
+        debug {
+            ndk {
+                abiFilters += listOf("arm64-v8a", "x86_64")
+            }
+        }
         release {
+            ndk {
+                abiFilters += listOf("arm64-v8a")
+            }
+            signingConfigs.findByName("release")?.let { signingConfig = it }
             optimization {
                 enable = false
             }
@@ -32,17 +75,23 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
+    experimentalProperties["android.experimental.enableScreenshotTest"] = true
 }
 
 dependencies {
     implementation(project(":core:model"))
+    implementation(project(":core:network"))
+    implementation(project(":core:auth"))
     implementation(project(":core:data"))
     implementation(project(":core:domain"))
     implementation(project(":core:designsystem"))
+    implementation(project(":feature:session"))
+    implementation(project(":feature:login"))
     implementation(project(":feature:hub"))
-    implementation(project(":feature:catalog"))
-    implementation(project(":feature:lesson"))
+    implementation(project(":feature:profile"))
+    implementation(project(":feature:ar"))
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
@@ -54,6 +103,9 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.browser)
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.okhttp)
 
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -63,15 +115,7 @@ dependencies {
     debugImplementation(platform(libs.androidx.compose.bom))
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
-}
-
-tasks.register<Copy>("exportDebugApk") {
-    group = "distribution"
-    description = "Gera o APK de debug e copia para a pasta releases/"
-    dependsOn("assembleDebug")
-    from(layout.buildDirectory.dir("outputs/apk/debug")) {
-        include("*.apk")
-    }
-    into(layout.projectDirectory.dir("../releases"))
-    rename { "claramente-debug.apk" }
+    screenshotTestImplementation(platform(libs.androidx.compose.bom))
+    screenshotTestImplementation(libs.androidx.compose.ui.tooling)
+    screenshotTestImplementation(libs.screenshot.validation.api)
 }

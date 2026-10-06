@@ -1,7 +1,7 @@
 package com.claramente
 
-import android.app.Application
 import com.claramente.di.AppContainer
+import android.app.Application
 
 class ClaramenteApplication : Application() {
     lateinit var container: AppContainer

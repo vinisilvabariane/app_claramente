@@ -16,6 +16,12 @@ class ArchitectureRulesTest {
         .filter { it.invariantSeparatorsPath.contains("/src/main/kotlin/") }
         .filterNot { it.invariantSeparatorsPath.contains("/build/") }
 
+    private val previewSources: List<File> = File(root, "app").walkTopDown()
+        .filter { it.isFile && it.extension == "kt" }
+        .filter { it.invariantSeparatorsPath.contains("/src/screenshotTest/kotlin/") }
+        .filterNot { it.invariantSeparatorsPath.contains("/build/") }
+        .toList()
+
     private val topLevel = Regex(
         "^(?:(?:public|internal|private|data|sealed|enum|abstract|open|inline|value|annotation|const|fun)\\s+)*" +
             "(class|interface|object|fun|val|var|typealias)\\s+(?:<[^>]+>\\s*)?(?:[A-Za-z_][\\w.]*\\.)?([A-Za-z_]\\w*)",
@@ -24,12 +30,15 @@ class ArchitectureRulesTest {
     private val allowedFolders = setOf(
         "contract", "client", "store", "http", "dto", "mapper", "model", "policy", "helper",
         "view", "component", "state", "viewmodel", "controller", "service",
-        "di", "navigation", "theme", "usecase", "error", "lesson",
+        "di", "navigation", "theme", "usecase", "error", "auth", "ar",
     )
 
     private fun inFolder(file: File, folder: String) = file.invariantSeparatorsPath.contains("/$folder/")
 
     private val forbiddenInThinLayers = listOf(
+        "import com.claramente.core.network.client.",
+        "import com.claramente.core.network.contract.",
+        "import com.claramente.core.network.http.ClaramenteHttp",
         "import com.claramente.core.data.store.",
         "import com.claramente.core.data.contract.",
     )
@@ -57,7 +66,7 @@ class ArchitectureRulesTest {
 
     @Test
     fun everyFileHasExactlyOneTopLevelDeclarationNamedLikeTheFile() {
-        val violations = mainSources.mapNotNull { file ->
+        val violations = (mainSources + previewSources).mapNotNull { file ->
             val found = declarations(file)
             when {
                 found.size != 1 -> "${file.relativeTo(root)}: ${found.size} declaracoes de topo ${found.map { it.second }}"

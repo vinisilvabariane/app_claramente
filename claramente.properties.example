@@ -1,0 +1,12 @@
+# Copie para claramente.properties (não versionado) e ajuste.
+
+# URL base do backend .NET (sem /api). No emulador Android, 10.0.2.2 aponta para o localhost do PC.
+# Celular físico na mesma rede: use o IP da máquina, ex.: http://192.168.0.10:5090
+CLARAMENTE_API_URL=http://10.0.2.2:5090
+
+# Mostra o botão "Entrar em modo teste" na tela de login (vale para debug e release; ponha false antes de distribuir).
+CLARAMENTE_MOCK_AUTH=false
+
+# URL base HTTPS onde a página de AR (MindAR) está publicada (frontend/public/ar/index.html).
+# A câmera no navegador só funciona em HTTPS.
+CLARAMENTE_AR_WEB_URL=https://seu-site.pages.dev

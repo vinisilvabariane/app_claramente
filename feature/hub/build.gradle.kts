@@ -22,7 +22,12 @@ android {
 
 dependencies {
     implementation(project(":core:designsystem"))
+    implementation(project(":core:auth"))
+    implementation(project(":core:domain"))
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.kotlinx.coroutines.android)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
